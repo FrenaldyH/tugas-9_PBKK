@@ -8,6 +8,7 @@ use App\Models\ToolExecutionLog;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class CascadeTest extends TestCase
@@ -43,6 +44,12 @@ class CascadeTest extends TestCase
         $message->delete();
 
         $this->assertDatabaseCount('tool_execution_logs', 0);
+    }
+
+    // SQLite and PostgreSQL do not index FK columns on their own, unlike MySQL
+    public function test_tool_log_foreign_key_column_is_indexed(): void
+    {
+        $this->assertTrue(Schema::hasIndex('tool_execution_logs', ['chat_message_id']));
     }
 
     // Proves the foreign key is enforced (also on SQLite)

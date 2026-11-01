@@ -12,8 +12,9 @@ return new class () extends Migration {
     {
         Schema::create('tool_execution_logs', function (Blueprint $table) {
             $table->id();
-            // Deleting a message removes the tool calls it triggered
-            $table->foreignId('chat_message_id')->constrained()->cascadeOnDelete();
+            // Deleting a message removes the tool calls it triggered. The explicit index matters on
+            // SQLite/PostgreSQL, which (unlike MySQL) do not index foreign key columns on their own
+            $table->foreignId('chat_message_id')->index()->constrained()->cascadeOnDelete();
             // Challenge 1: the agent that ran the tool (loggable_type + loggable_id, no DB-level FK)
             $table->morphs('loggable');
             $table->string('tool_name', 100);

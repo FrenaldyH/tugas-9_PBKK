@@ -74,6 +74,20 @@ class ChatHistoryQueryTest extends TestCase
             ->assertSee('log_analyzer');
     }
 
+    // A bulk delete skips model events, so the trait cannot clean up and a log outlives its agent
+    public function test_page_still_renders_when_an_agent_was_bulk_deleted(): void
+    {
+        $user = User::factory()->create();
+        $session = $this->sessionWithMessages($user, 1);
+
+        SecurityScanner::query()->delete();
+
+        $this->actingAs($user)
+            ->get(route('chat-sessions.show', $session))
+            ->assertOk()
+            ->assertSee('(agent sudah dihapus)');
+    }
+
     public function test_another_user_gets_403(): void
     {
         $session = $this->sessionWithMessages(User::factory()->create(), 1);

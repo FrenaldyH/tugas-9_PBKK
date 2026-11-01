@@ -33,9 +33,10 @@
                         </details>
                     </td>
                     <td class="px-3 py-2">
-                        {{-- loggable_type is the morph alias; loggable is already eager loaded --}}
+                        {{-- loggable_type is the morph alias; loggable is already eager loaded.
+                             It can be null when an agent was bulk-deleted, which skips model events --}}
                         <span class="inline-block rounded-full bg-canvas-soft px-2 font-mono text-xs text-body">{{ $log->loggable_type }}</span>
-                        <span class="text-mute">{{ $log->loggable->name }}</span>
+                        <span class="text-mute">{{ $log->loggable?->name ?? '(agent sudah dihapus)' }}</span>
                     </td>
                     <td class="px-3 py-2"><x-status-badge :status="$log->status" /></td>
                     <td class="whitespace-nowrap px-3 py-2 font-mono text-xs text-body">

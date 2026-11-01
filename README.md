@@ -14,8 +14,16 @@ php artisan migrate:fresh --seed
 php artisan serve
 ```
 
-Login demo: `test@example.com` / `password`. Buka menu **Sesi chat**; sesi `Demo: 10 messages, 6 tool logs`
-berisi data tetap (10 pesan, 6 log) untuk perbandingan Debugbar.
+Akun demo (password semuanya `password`):
+
+| Email | Nama | Sesi |
+|---|---|---|
+| `test@example.com` | Demo User | 3 sesi, termasuk `Audit keamanan web-prod-01` |
+| `rizky@example.com` | Rizky Ramadhan | 1 sesi |
+| `sinta@example.com` | Sinta Maharani | 1 sesi |
+
+Sesi `Audit keamanan web-prod-01` berisi data tetap (10 pesan, 6 tool log dari 3 tipe agent) untuk perbandingan Debugbar.
+Percakapan ditulis tangan di `database/seeders/ChatScenarios.php`; baris datanya tetap dibuat lewat factory.
 
 ```bash
 php artisan test               # PHPUnit

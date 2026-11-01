@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Enums\MessageRole;
 use App\Models\ChatMessage;
 use App\Models\ChatSession;
 use App\Models\LogAnalyzer;
@@ -19,59 +18,70 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // One agent per type; every tool log points at one of them (polymorphic)
+        // One named agent per type; every tool log points at one of them (polymorphic)
         $agents = [
-            SecurityScanner::factory()->create(),
-            MalwareScanner::factory()->create(),
-            LogAnalyzer::factory()->create(),
+            'security_scanner' => SecurityScanner::factory()->create(['name' => 'Port & Vulnerability Scanner']),
+            'malware_scanner' => MalwareScanner::factory()->create(['name' => 'Malware Scanner']),
+            'log_analyzer' => LogAnalyzer::factory()->create(['name' => 'Log Analyzer']),
         ];
 
-        // Demo user plus four random users: 5 users x 3 sessions x about 8 messages
-        $demo = User::factory()->create(['name' => 'Test User', 'email' => 'test@example.com']);
-        $users = User::factory(4)->create()->prepend($demo);
+        $scenarios = ChatScenarios::all();
 
-        foreach ($users as $user) {
-            ChatSession::factory(3)->for($user)->create()->each(
-                fn (ChatSession $session) => $this->fillSession($session, fake()->numberBetween(6, 10), $agents)
-            );
+        // Demo user owns the fixed-size session ('audit') plus two more
+        $demo = User::factory()->create(['name' => 'Demo User', 'email' => 'test@example.com']);
+        foreach (['audit', 'ssl', 'weekly'] as $key) {
+            $this->seedScenario($demo, $scenarios[$key], $agents);
         }
 
-        // Fixed-size session (10 messages, 6 logs) so Debugbar before/after shots are comparable
-        $fixed = ChatSession::factory()->for($demo)->create(['title' => 'Demo: 10 messages, 6 tool logs']);
-        $this->fillSession($fixed, 10, $agents, [2, 1, 1, 1, 1]);
+        // Two other users, so ownership (403 for other people's sessions) can be shown
+        $rizky = User::factory()->create(['name' => 'Rizky Ramadhan', 'email' => 'rizky@example.com']);
+        $this->seedScenario($rizky, $scenarios['traffic'], $agents);
+
+        $sinta = User::factory()->create(['name' => 'Sinta Maharani', 'email' => 'sinta@example.com']);
+        $this->seedScenario($sinta, $scenarios['antivirus'], $agents);
     }
 
     /**
-     * Fill a session with alternating user/assistant messages.
+     * Create one session with its messages and tool logs, using the factories.
      *
-     * @param  array<int, mixed>  $agents  agent models used as the loggable
-     * @param  array<int, int>|null  $logsPerReply  tool logs per assistant reply, random (0-2) when null
+     * @param  array<string, mixed>  $scenario  one entry of ChatScenarios::all()
+     * @param  array<string, mixed>  $agents  agent models keyed by morph alias
      */
-    private function fillSession(ChatSession $session, int $messageCount, array $agents, ?array $logsPerReply = null): void
+    private function seedScenario(User $user, array $scenario, array $agents): void
     {
-        $start = now()->subHours(2);
-        $reply = 0;
+        $start = now()->subHours($scenario['hours_ago']);
 
-        for ($i = 0; $i < $messageCount; $i++) {
-            $isUser = $i % 2 === 0;
+        $session = ChatSession::factory()->for($user)->create([
+            'title' => $scenario['title'],
+            'created_at' => $start,
+            'updated_at' => $start->copy()->addMinutes(count($scenario['messages'])),
+        ]);
 
-            // Distinct timestamps keep the message order stable
-            $message = ChatMessage::factory()->for($session)->create([
-                'role' => $isUser ? MessageRole::User : MessageRole::Assistant,
-                'created_at' => $start->copy()->addMinutes($i),
+        foreach ($scenario['messages'] as $i => $message) {
+            [$role, $content, $logs] = $message + [2 => []];
+
+            // One minute apart, so the order stays stable
+            $sentAt = $start->copy()->addMinutes($i);
+
+            $chatMessage = ChatMessage::factory()->for($session)->create([
+                'role' => $role,
+                'content' => $content,
+                'created_at' => $sentAt,
             ]);
 
-            if ($isUser) {
-                continue;
-            }
-
-            $logCount = $logsPerReply[$reply++] ?? fake()->numberBetween(0, 2);
-
-            for ($n = 0; $n < $logCount; $n++) {
+            foreach ($logs as $log) {
                 ToolExecutionLog::factory()
-                    ->for($message, 'chatMessage')
-                    ->for(fake()->randomElement($agents), 'loggable')
-                    ->create();
+                    ->for($chatMessage, 'chatMessage')
+                    ->for($agents[$log['agent']], 'loggable')
+                    ->create([
+                        'tool_name' => $log['tool'],
+                        'input' => $log['input'],
+                        'result' => $log['result'],
+                        'status' => $log['status'],
+                        'duration_ms' => $log['durationMs'],
+                        'error_message' => $log['error'],
+                        'created_at' => $sentAt,
+                    ]);
             }
         }
     }

@@ -27,18 +27,32 @@ class DatabaseSeeder extends Seeder
 
         $scenarios = ChatScenarios::all();
 
-        // Demo user owns the fixed-size session ('audit') plus two more
-        $demo = User::factory()->create(['name' => 'Demo User', 'email' => 'test@example.com']);
-        foreach (['audit', 'ssl', 'weekly'] as $key) {
-            $this->seedScenario($demo, $scenarios[$key], $agents);
+        // Kelompok 1 members as demo accounts (factory password: "password")
+        $members = collect([
+            'frenaldy' => 'Frenaldy Bestabba Hasugian',
+            'mitra' => 'Mitra Partogi',
+            'dimas' => 'Dimas Setiaji',
+            'steven' => 'Steven Alvin Christian',
+            'hoshida' => 'Hoshida Ahmad Tsalatsu Fadlulloh',
+            'isabella' => 'Isabella Sienna Sulisthio',
+        ])->map(fn (string $name, string $key) => User::factory()->create([
+            'name' => $name,
+            'email' => "{$key}@example.com",
+        ]));
+
+        // Who owns which scenario. Frenaldy holds the fixed-size 'audit' session; sessions of other
+        // members show the 403 check, and members without a session show the empty state
+        $owners = [
+            'audit' => 'frenaldy',
+            'ssl' => 'frenaldy',
+            'weekly' => 'frenaldy',
+            'traffic' => 'mitra',
+            'antivirus' => 'dimas',
+        ];
+
+        foreach ($owners as $scenario => $member) {
+            $this->seedScenario($members[$member], $scenarios[$scenario], $agents);
         }
-
-        // Two other users, so ownership (403 for other people's sessions) can be shown
-        $rizky = User::factory()->create(['name' => 'Rizky Ramadhan', 'email' => 'rizky@example.com']);
-        $this->seedScenario($rizky, $scenarios['traffic'], $agents);
-
-        $sinta = User::factory()->create(['name' => 'Sinta Maharani', 'email' => 'sinta@example.com']);
-        $this->seedScenario($sinta, $scenarios['antivirus'], $agents);
     }
 
     /**

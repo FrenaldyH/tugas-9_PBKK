@@ -48,17 +48,17 @@ class ChatScenarios
 
             // Shows a system message and a failed tool call that succeeds on retry
             'ssl' => [
-                'title' => 'Pengecekan sertifikat SSL shop.example.co.id',
+                'title' => 'Pengecekan sertifikat SSL shop.example.com',
                 'hours_ago' => 26,
                 'messages' => [
                     [MessageRole::System, 'Kamu adalah asisten keamanan untuk tim infrastruktur. Jawab ringkas dan selalu sertakan langkah tindak lanjut.'],
-                    [MessageRole::User, 'Cek sertifikat SSL untuk shop.example.co.id.'],
+                    [MessageRole::User, 'Cek sertifikat SSL untuk shop.example.com.'],
                     [MessageRole::Assistant, 'Pengecekan gagal karena koneksi ke host kehabisan waktu setelah 5 detik. Kemungkinan host tidak terjangkau dari jaringan scanner. Tindak lanjut: periksa DNS dan aturan firewall, lalu beri tahu saya untuk mengulang pengecekan.', [
-                        self::log('security_scanner', 'check_ssl_certificate', ['host' => 'shop.example.co.id'], null, ToolStatus::Failed, 5000, 'Connection timed out after 5000 ms'),
+                        self::log('security_scanner', 'check_ssl_certificate', ['host' => 'shop.example.com'], null, ToolStatus::Failed, 5000, 'Connection timed out after 5000 ms'),
                     ]],
                     [MessageRole::User, 'Firewall sudah dibuka, coba lagi.'],
                     [MessageRole::Assistant, "Berhasil. Sertifikat diterbitkan oleh Let's Encrypt R11 dan berlaku 63 hari lagi, dengan rantai sertifikat yang lengkap. Tidak ada tindak lanjut sampai sekitar 30 hari sebelum kedaluwarsa.", [
-                        self::log('security_scanner', 'check_ssl_certificate', ['host' => 'shop.example.co.id'], ['issuer' => "Let's Encrypt R11", 'valid' => true, 'expires_in_days' => 63, 'chain_complete' => true], ToolStatus::Success, 380),
+                        self::log('security_scanner', 'check_ssl_certificate', ['host' => 'shop.example.com'], ['issuer' => "Let's Encrypt R11", 'valid' => true, 'expires_in_days' => 63, 'chain_complete' => true], ToolStatus::Success, 380),
                     ]],
                 ],
             ],

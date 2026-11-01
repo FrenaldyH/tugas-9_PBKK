@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class () extends Migration {
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('chat_sessions', function (Blueprint $table) {
+            $table->id();
+            // Deleting a user removes all of their chat sessions
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('title', 150)->nullable();
+            $table->timestamps();
+
+            // Latest sessions of a user
+            $table->index(['user_id', 'updated_at']);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('chat_sessions');
+    }
+};

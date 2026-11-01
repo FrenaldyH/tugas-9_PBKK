@@ -1,0 +1,78 @@
+Tugas Kelompok: Pemodelan Relasi Agentic AI Platform
+(1/5)
+Visi Tugas Pertemuan 9
+• Menyusun pondasi basis data relasional yang kokoh untuk mendukung fitur kompleks pada Proyek Kelompok Platform
+Agentic AI.
+• Tugas ini bertujuan melatih kemampuan mahasiswa memodelkan skema database relasional dunia nyata.
+Sasaran Proyek Kelompok
+• Kelompok (berisi maksimal 6 mahasiswa) harus merancang dan memigrasikan tabel relasi di Laravel.
+• Rancangan harus melayani fungsionalitas pencatatan sesi obrolan (chatting), isi pesan, serta log pemanggilan sistem/alat
+otomatis (tool calling log) oleh agent AI.
+Spesifikasi Teknis Tugas: Skema Database & Relasi (2/5)
+Empat Model Utama yang Wajib Dibuat
+• 1. User (Model Bawaan Breeze)
+• 2. ChatSession (Model Sesi Chatting)
+• 3. ChatMessage (Model Isi Percakapan)
+• 4. ToolExecutionLog (Model Log Aktivitas Alat)
+Aturan Pemetaan Relasi Relasional
+• User memiliki banyak ChatSession (`hasMany`).
+• ChatSession belongsTo User dan memiliki banyak ChatMessage (`hasMany`).
+• ChatMessage belongsTo ChatSession dan memiliki banyak ToolExecutionLog (`hasMany`).
+• ToolExecutionLog belongsTo ChatMessage.
+Aturan Tambahan
+• Wajib menyertakan migrations lengkap dengan foreign key constraints dan onDelete('cascade').
+• Gunakan model factory untuk menyiram data dummy relasional.
+Tantangan Tambahan (Challenge! - Nilai Plus A+) (3/5)
+Tantangan 1: Polymorphic Logging
+• Ubah relasi `ToolExecutionLog` menjadi Polymorphic Relationship.
+• Hal ini agar satu tabel log tersebut dapat direferensikan oleh berbagai tipe model Agent khusus yang berbeda (misal:
+`SecurityScanner`, `MalwareScanner`, `LogAnalyzer`) secara fleksibel.
+• Gunakan polymorphic helper `morphs('loggable')` pada migrasi.
+Tantangan 2: Optimasi Kueri Riwayat Obrolan
+• Tuliskan kueri Eloquent teroptimasi pada controller obrolan Anda.
+• Gunakan Eager Loading bertingkat untuk memuat seluruh pesan beserta seluruh log alat dalam obrolan tertentu secara
+instan.
+• Aplikasi harus terbukti bebas dari masalah N+1 query (buktikan lewat screenshot Laravel Debugbar).
+Kriteria Penilaian & Rubrik Evaluasi Tugas (4/5)
+Kriteria Penilaian Bobot Indikator Utama Kelulusan
+Tugas
+Kategori
+Rancangan Skema &
+Migrasi
+35% Relasi foreign key dideklarasikan
+dengan benar, tertata, dan integrity
+cascade aktif.
+Teknis
+Implementasi Model &
+ORM
+25% Method relasi hasMany & belongsTo
+ditulis sesuai standar konvensi nama
+plural/singular.
+Teknis
+Optimasi Eager Loading 20% Bebas dari masalah N+1 query
+menggunakan eager loading with()
+bertingkat.
+Optimasi
+Penyelesaian Challenge
+A+
+10% Keberhasilan mengimplementasikan
+Polymorphic Logging pada log aktivitas
+Agent AI.
+Inovasi
+Kerapian Kode & Standar
+PSR
+10% Kepatuhan penulisan kode PHP
+mengikuti panduan gaya penulisan
+PSR-12.
+Sikap
+Ketentuan Pengumpulan & Sesi Demo Minggu Depan
+(5/5)
+Mekanisme Pengumpulan Berkas
+• Tugas dikerjakan dalam repositori GitHub kelompok yang sama dengan minggu sebelumnya.
+• Wajib menyertakan diagram Entity-Relationship Diagram (ERD) relasi basis data pada file `README.md` repositori.
+• Batas pengumpulan tautan repositori ke LMS ITS: H-1 sebelum Pertemuan 10.
+Ketentuan Sesi Demo Presentasi
+• Setiap kelompok wajib menyiapkan slide pitch maksimal 5 halaman untuk mempresentasikan hasil rancangan relasi basis
+data kelompok.
+• Durasi presentasi ketat maksimal 5 menit per kelompok.
+• Urutan tampil akan diacak di awal perkuliahan Pertemuan 10.
